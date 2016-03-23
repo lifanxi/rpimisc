@@ -4,6 +4,7 @@ import aliyun.api
 import json
 import sys
 import urllib2
+import time
 
 def init_api():
     # Setup Aliyun API Access key
@@ -55,6 +56,32 @@ def update_domain_record_id(record_id, ip, record):
         return False
         
     return True
+
+def get_cached_ip():
+    try:
+        conf = json.load(file('cache.json'))
+        t = int(conf['ts'])
+        ip = str(conf['ip'])
+        now = int(time.time())
+        print(now,t)
+        if now - t < 30 * 60:
+            return ip
+        else:
+            return None
+    except Exception,e:
+        print(e)
+        return None
+
+def update_cache(ip):
+    try:
+        value = {'ts': int(time.time()), 'ip': ip}
+        f = file('cache.json', 'w')
+        f.write(json.dumps(value))
+        f.close()
+    except Exception,e:
+        print(e)
+        pass
+        
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print("Usage: ./update.py <Record Id> <record> <IP>")
@@ -69,13 +96,19 @@ if __name__ == '__main__':
     else:
         ip = get_my_ip()
 
+    if get_cached_ip() == ip:
+        print("No need to update. (Cached)")
+        sys.exit(0)
+        
     init_api()
     
     if get_domain_record(record_id) == ip:
+        update_cache(ip)
         print("No need to update")
         sys.exit(0)
 
     if update_domain_record_id(record_id, ip, record):
+        update_cache(ip)
         print("Success")
         sys.exit(0)
     else:
