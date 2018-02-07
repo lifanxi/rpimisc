@@ -67,11 +67,12 @@ def update_dns(dns_rr, dns_type, dns_value, dns_record_id, dns_ttl, dns_format):
 通过 ip.cn 获取当前主机的外网IP
 """
 def get_my_ip_public():
-    get_ip_method = os.popen('curl -s https://freemindworld.com/tools/myip.php')
-    get_ip_responses = get_ip_method.readlines()[0]
-    get_ip_pattern = re.compile(r'\d+\.\d+\.\d+\.\d+')
-    get_ip_value = get_ip_pattern.findall(get_ip_responses)
-    return get_ip_value
+    try:
+        u = urllib2.urlopen('https://www.freemindworld.com/tools/myip.php')
+        return u.read().strip('\n')
+    except HTTPError as e:
+        print('getMyIp:',e)
+        return None 
 
 def get_my_ip_internal():
     import socket
@@ -121,7 +122,7 @@ if __name__ == '__main__':
         if now_ip == "internal":
             now_ip = get_my_ip_internal()
     else:
-        now_ip = get_my_ip_public()[0]
+        now_ip = get_my_ip_public()
 
     if get_cached_ip() == now_ip:
         print("No need to update. (Cached)")
