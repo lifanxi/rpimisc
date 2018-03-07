@@ -30,6 +30,7 @@ def check_records(dns_domain):
     clt = client.AcsClient(access_key_id, access_key_secret, 'cn-hangzhou')
     request = DescribeDomainRecordsRequest.DescribeDomainRecordsRequest()
     request.set_DomainName(dns_domain)
+    request.set_PageSize(50)
     request.set_accept_format(rc_format)
     result = clt.do_action(request)
     result = json.JSONDecoder().decode(result)
@@ -68,7 +69,7 @@ def update_dns(dns_rr, dns_type, dns_value, dns_record_id, dns_ttl, dns_format):
 """
 def get_my_ip_public():
     try:
-        u = urllib2.urlopen('https://www.freemindworld.com/tools/myip.php')
+        u = urllib2.urlopen('https://freemindworld.com/tools/myip.php')
         return u.read().strip('\n')
     except HTTPError as e:
         print('getMyIp:',e)
@@ -151,7 +152,7 @@ if __name__ == '__main__':
         rc_type = 'A'               # 记录类型, DDNS填写A记录
         rc_value = now_ip           # 新的解析记录值
         rc_record_id = record_id    # 记录ID
-        rc_ttl = '1000'             # 解析记录有效生存时间TTL,单位:秒
+        rc_ttl = '600'             # 解析记录有效生存时间TTL,单位:秒
 
         print update_dns(rc_rr, rc_type, rc_value, rc_record_id, rc_ttl, rc_format)
         update_cache(now_ip)
